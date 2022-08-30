@@ -15,6 +15,7 @@
 		E24634F028BDFEE6009A51F9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E24634EE28BDFEE6009A51F9 /* LaunchScreen.storyboard */; };
 		E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634F628BDFFFF009A51F9 /* CIImage.swift */; };
 		E24634F928BE0053009A51F9 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634F828BE0053009A51F9 /* VideoCapture.swift */; };
+		E24634FB28BE009A009A51F9 /* CapturePreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634FA28BE009A009A51F9 /* CapturePreviewView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -27,6 +28,7 @@
 		E24634EF28BDFEE6009A51F9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E24634F628BDFFFF009A51F9 /* CIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImage.swift; sourceTree = "<group>"; };
 		E24634F828BE0053009A51F9 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
+		E24634FA28BE009A009A51F9 /* CapturePreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CapturePreviewView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -67,6 +69,7 @@
 				E24634EE28BDFEE6009A51F9 /* LaunchScreen.storyboard */,
 				E24634F628BDFFFF009A51F9 /* CIImage.swift */,
 				E24634F828BE0053009A51F9 /* VideoCapture.swift */,
+				E24634FA28BE009A009A51F9 /* CapturePreviewView.swift */,
 			);
 			path = "NC2-Product";
 			sourceTree = "<group>";
@@ -146,6 +149,7 @@
 				E24634F928BE0053009A51F9 /* VideoCapture.swift in Sources */,
 				E24634E828BDFEE5009A51F9 /* ViewController.swift in Sources */,
 				E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */,
+				E24634FB28BE009A009A51F9 /* CapturePreviewView.swift in Sources */,
 				E24634E428BDFEE5009A51F9 /* AppDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
