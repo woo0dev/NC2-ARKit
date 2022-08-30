@@ -14,6 +14,7 @@
 		E24634ED28BDFEE6009A51F9 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = E24634EC28BDFEE6009A51F9 /* Assets.xcassets */; };
 		E24634F028BDFEE6009A51F9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E24634EE28BDFEE6009A51F9 /* LaunchScreen.storyboard */; };
 		E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634F628BDFFFF009A51F9 /* CIImage.swift */; };
+		E24634F928BE0053009A51F9 /* VideoCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634F828BE0053009A51F9 /* VideoCapture.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -25,6 +26,7 @@
 		E24634EC28BDFEE6009A51F9 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		E24634EF28BDFEE6009A51F9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E24634F628BDFFFF009A51F9 /* CIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImage.swift; sourceTree = "<group>"; };
+		E24634F828BE0053009A51F9 /* VideoCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCapture.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -64,6 +66,7 @@
 				E24634EC28BDFEE6009A51F9 /* Assets.xcassets */,
 				E24634EE28BDFEE6009A51F9 /* LaunchScreen.storyboard */,
 				E24634F628BDFFFF009A51F9 /* CIImage.swift */,
+				E24634F828BE0053009A51F9 /* VideoCapture.swift */,
 			);
 			path = "NC2-Product";
 			sourceTree = "<group>";
@@ -140,6 +143,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				E24634F928BE0053009A51F9 /* VideoCapture.swift in Sources */,
 				E24634E828BDFEE5009A51F9 /* ViewController.swift in Sources */,
 				E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */,
 				E24634E428BDFEE5009A51F9 /* AppDelegate.swift in Sources */,
