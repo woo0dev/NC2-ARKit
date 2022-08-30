@@ -12,7 +12,8 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
-    
+	@IBOutlet weak var previewView: CapturePreviewView!
+	
 	var trackingStateOK: Bool = false
 	let sphereNode = SCNNode(geometry: SCNSphere(radius: 0.01))
 	var tappedPointNodeOrigin: SCNNode?
@@ -25,6 +26,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	let descriptionLabel = UILabel()
 	
 	var cameraPosition = [Float]()
+	
+	let context = CIContext()
+	let modelFile = Inceptionv3()
+	let videoCapture : VideoCapture = VideoCapture()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
@@ -58,6 +63,20 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		let scene = SCNScene()
 		
 		sceneView.scene = scene
+		
+		self.videoCapture.delegate = self
+		
+		if self.videoCapture.initCamera(){
+			(self.previewView.layer as! AVCaptureVideoPreviewLayer).session =
+			self.videoCapture.captureSession
+			
+			(self.previewView.layer as! AVCaptureVideoPreviewLayer).videoGravity =
+			AVLayerVideoGravity.resizeAspectFill
+			
+			self.videoCapture.asyncStartCapturing()
+		}else{
+			fatalError("Fail to init Video Capture")
+		}
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -73,28 +92,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		
 		sceneView.session.pause()
 	}
-	
-//	func renderer(_ renderer: SCNSceneRenderer, didAdd node: SCNNode, for anchor: ARAnchor) {
-//		if !(anchor is ARPlaneAnchor) {
-//			return
-//		}
-//
-//		let plane = OverlayPlane(anchor: anchor as! ARPlaneAnchor)
-//		self.planes.append(plane)
-//		node.addChildNode(plane)
-//	}
-//
-//	func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
-//		let plane = self.planes.filter { plane in
-//			return plane.anchor.identifier == anchor.identifier
-//		}.first
-//
-//		if plane == nil {
-//			return
-//		}
-//
-//		plane?.update(anchor: anchor as! ARPlaneAnchor)
-//	}
 	
 	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
 		switch camera.trackingState {
@@ -124,34 +121,45 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		guard let result = hitTestResults.first else { return }
 		// 수정
 		let worldCoordinates = simd_float3(x: result.worldTransform.columns.3.x, y: result.worldTransform.columns.3.y, z: result.worldTransform.columns.3.z)
-		
-		
-//		guard let cameraPosition = sceneView.pointOfView?.position else { return }
-		let cameraCoordinates = simd_float3(x: x, y: y, z: z)
-//		print(cameraPosition)
-		let distance = distance(cameraCoordinates, worldCoordinates)
-		
-		distanceLabel.text = String(floor(distance*10000)/100) + "cm"
-	}
-	
-	func printDistance(x: Float, y: Float, z: Float, result: ARHitTestResult) {
-		guard trackingStateOK == true else { return }
-		let worldCoordinates = simd_float3(x: result.worldTransform.columns.3.x, y: result.worldTransform.columns.3.y, z: result.worldTransform.columns.3.z)
-		
 		let cameraCoordinates = simd_float3(x: x, y: y, z: z)
 		let distance = distance(cameraCoordinates, worldCoordinates)
 		
 		distanceLabel.text = String(floor(distance*10000)/100) + "cm"
 	}
-	
-	// 물체를 인식했을 때 그 물체와의 거리를 측정하기
-	override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
-		if let touchLocation = touches.first?.location(in: view) {
-			let hitTestResults = sceneView.hitTest(touchLocation, types: .featurePoint)
+}
 
-			if let hitResult = hitTestResults.first {
-				printDistance(x: cameraPosition[0], y: cameraPosition[1], z: cameraPosition[2], result: hitResult)
+extension ViewController: VideoCaptureDelegate {
+	func onFrameCaptured(videoCapture: VideoCapture, pixelBuffer: CVPixelBuffer?, timestamp: CMTime){
+		guard let pixelBuffer = pixelBuffer else{ return }
+		
+		let image = CIImage(cvImageBuffer: pixelBuffer)
+		
+		guard let model = try? VNCoreMLModel(for: modelFile.model) else {
+			fatalError("can't load Places ML model")
+		}
+		
+		let handler = VNImageRequestHandler(ciImage: image)
+		let request = VNCoreMLRequest(model: model, completionHandler: myResultsMethod)
+		try! handler.perform( [ request ] )
+	}
+	
+	func myResultsMethod(request: VNRequest, error: Error?) {
+		guard let results = request.results as? [VNClassificationObservation] else {
+			fatalError("could not get results from ML Vision request.")
+		}
+		
+		var bestPrediction = ""
+		var bestConfidence: VNConfidence = 0
+		
+		for classification in results {
+			print(classification.accessibilityPath?.bounds)
+			if(classification.confidence > bestConfidence) {
+				bestConfidence = classification.confidence
+				bestPrediction = classification.identifier
 			}
 		}
+		
+		print("predicted: \(bestPrediction) with confidence of \(bestConfidence) out of 1")
 	}
+	
 }
