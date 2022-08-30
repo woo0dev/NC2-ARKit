@@ -29,39 +29,14 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	
 	let context = CIContext()
 	let modelFile = Inceptionv3()
-	let videoCapture : VideoCapture = VideoCapture()
+	let videoCapture: VideoCapture = VideoCapture()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
-		
-		sceneView = ARSCNView(frame: view.bounds)
-		view.addSubview(sceneView)
-		
-		sceneView.scene.rootNode.addChildNode(lineNode)
-		
-		distanceLabel.text = ""
-		distanceLabel.frame = CGRect(x: 0, y: view.bounds.maxY - 200, width: view.bounds.width, height: 200)
-		view.addSubview(distanceLabel)
-		distanceLabel.textColor = .red
-		distanceLabel.textAlignment = .center
-		distanceLabel.numberOfLines = 3
-		distanceLabel.font = .systemFont(ofSize: 40, weight: .bold)
-		
-		descriptionLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
-		descriptionLabel.numberOfLines = 3
-		descriptionLabel.textAlignment = .center
-		descriptionLabel.textColor = .white
-		view.addSubview(descriptionLabel)
-		
-		let markLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 30, height: 20))
-		markLabel.text = "🔴"
-		view.addSubview(markLabel)
+		setupComponents()
 		
 		sceneView.delegate = self
-		sceneView.showsStatistics = true
-		
 		let scene = SCNScene()
-		
 		sceneView.scene = scene
 		
 		self.videoCapture.delegate = self
@@ -91,6 +66,26 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		super.viewWillDisappear(animated)
 		
 		sceneView.session.pause()
+	}
+	
+	func setupComponents() {
+		distanceLabel.text = ""
+		distanceLabel.frame = CGRect(x: 0, y: view.bounds.maxY - 200, width: view.bounds.width, height: 200)
+		view.addSubview(distanceLabel)
+		distanceLabel.textColor = .red
+		distanceLabel.textAlignment = .center
+		distanceLabel.numberOfLines = 3
+		distanceLabel.font = .systemFont(ofSize: 40, weight: .bold)
+		
+		descriptionLabel.frame = CGRect(x: 0, y: 0, width: view.bounds.width, height: 200)
+		descriptionLabel.numberOfLines = 3
+		descriptionLabel.textAlignment = .center
+		descriptionLabel.textColor = .white
+		view.addSubview(descriptionLabel)
+		
+		let markLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 30, height: 20))
+		markLabel.text = "🔴"
+		view.addSubview(markLabel)
 	}
 	
 	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
