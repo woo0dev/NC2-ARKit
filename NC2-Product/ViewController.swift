@@ -12,7 +12,6 @@ import ARKit
 class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
-	@IBOutlet weak var previewView: CapturePreviewView!
 	
 	var trackingStateOK: Bool = false
 	let sphereNode = SCNNode(geometry: SCNSphere(radius: 0.01))
@@ -29,29 +28,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	
 	let context = CIContext()
 	let modelFile = Inceptionv3()
-	let videoCapture: VideoCapture = VideoCapture()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		setupComponents()
-		
 		sceneView.delegate = self
 		let scene = SCNScene()
 		sceneView.scene = scene
-		
-		self.videoCapture.delegate = self
-		
-		if self.videoCapture.initCamera(){
-			(self.previewView.layer as! AVCaptureVideoPreviewLayer).session =
-			self.videoCapture.captureSession
-			
-			(self.previewView.layer as! AVCaptureVideoPreviewLayer).videoGravity =
-			AVLayerVideoGravity.resizeAspectFill
-			
-			self.videoCapture.asyncStartCapturing()
-		}else{
-			fatalError("Fail to init Video Capture")
-		}
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -107,6 +90,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		cameraPosition.append(transform.columns.3.y)
 		cameraPosition.append(transform.columns.3.z)
 		printDistance(x: transform.columns.3.x, y: transform.columns.3.y, z: transform.columns.3.z)
+		
+		let pixelBuffer = frame.capturedImage
+		guard let model = try? VNCoreMLModel(for: modelFile.model) else {
+			fatalError("can't load Places ML model")
+		}
+		
+		let image = CIImage(cvImageBuffer: pixelBuffer)
+		let handler = VNImageRequestHandler(ciImage: image)
+		let request = VNCoreMLRequest(model: model, completionHandler: myResultsMethod)
+		try! handler.perform( [ request ] )
 	}
 	
 	func printDistance(x: Float, y: Float, z: Float) {
@@ -121,22 +114,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		
 		distanceLabel.text = String(floor(distance*10000)/100) + "cm"
 	}
-}
-
-extension ViewController: VideoCaptureDelegate {
-	func onFrameCaptured(videoCapture: VideoCapture, pixelBuffer: CVPixelBuffer?, timestamp: CMTime){
-		guard let pixelBuffer = pixelBuffer else{ return }
-		
-		let image = CIImage(cvImageBuffer: pixelBuffer)
-		
-		guard let model = try? VNCoreMLModel(for: modelFile.model) else {
-			fatalError("can't load Places ML model")
-		}
-		
-		let handler = VNImageRequestHandler(ciImage: image)
-		let request = VNCoreMLRequest(model: model, completionHandler: myResultsMethod)
-		try! handler.perform( [ request ] )
-	}
 	
 	func myResultsMethod(request: VNRequest, error: Error?) {
 		guard let results = request.results as? [VNClassificationObservation] else {
@@ -147,14 +124,10 @@ extension ViewController: VideoCaptureDelegate {
 		var bestConfidence: VNConfidence = 0
 		
 		for classification in results {
-			print(classification.accessibilityPath?.bounds)
-			if(classification.confidence > bestConfidence) {
+			if(classification.confidence > bestConfidence && classification.confidence > 0.6) {
 				bestConfidence = classification.confidence
 				bestPrediction = classification.identifier
 			}
 		}
-		
-		print("predicted: \(bestPrediction) with confidence of \(bestConfidence) out of 1")
 	}
-	
 }
