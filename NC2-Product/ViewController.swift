@@ -13,6 +13,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 
     @IBOutlet var sceneView: ARSCNView!
 	
+	private var detectionOverlay: CALayer! = nil
+	
 	var trackingStateOK: Bool = false
 	let sphereNode = SCNNode(geometry: SCNSphere(radius: 0.01))
 	var tappedPointNodeOrigin: SCNNode?
@@ -27,11 +29,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	var cameraPosition = [Float]()
 	
 	let context = CIContext()
-	let modelFile = Inceptionv3()
+	let modelFile = YOLOv3Tiny()
+	var bufferSize: CGSize = .zero
+	var label = ""
+	var point = CGPoint()
+	var changed = false
+	
+	let check = UIView()
 	
 	override func viewDidLoad() {
 		super.viewDidLoad()
 		setupComponents()
+		
+		bufferSize.width = sceneView.frame.width
+		bufferSize.height = sceneView.frame.height
+		
 		sceneView.delegate = self
 		let scene = SCNScene()
 		sceneView.scene = scene
@@ -66,9 +78,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		descriptionLabel.textColor = .white
 		view.addSubview(descriptionLabel)
 		
-		let markLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 30, height: 20))
-		markLabel.text = "🔴"
-		view.addSubview(markLabel)
+//		let markLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 30, height: 20))
+//		markLabel.text = "🔴"
+//		view.addSubview(markLabel)
+		
+		sceneView.addSubview(check)
 	}
 	
 	func session(_ session: ARSession, cameraDidChangeTrackingState camera: ARCamera) {
@@ -89,7 +103,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		cameraPosition.append(transform.columns.3.x)
 		cameraPosition.append(transform.columns.3.y)
 		cameraPosition.append(transform.columns.3.z)
-		printDistance(x: transform.columns.3.x, y: transform.columns.3.y, z: transform.columns.3.z)
 		
 		let pixelBuffer = frame.capturedImage
 		guard let model = try? VNCoreMLModel(for: modelFile.model) else {
@@ -100,33 +113,50 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		let handler = VNImageRequestHandler(ciImage: image)
 		let request = VNCoreMLRequest(model: model, completionHandler: myResultsMethod)
 		try! handler.perform( [ request ] )
+		
+		if changed {
+			printDistance(x: transform.columns.3.x, y: transform.columns.3.y, z: transform.columns.3.z, point: point)
+		}
 	}
 	
-	func printDistance(x: Float, y: Float, z: Float) {
+	func printDistance(x: Float, y: Float, z: Float, point: CGPoint) {
 		guard trackingStateOK == true else { return }
-		let hitTestResults = sceneView.hitTest(sceneView.center, types: .estimatedHorizontalPlane)
-
+		let hitTestResults = sceneView.hitTest(point, types: [.estimatedHorizontalPlane, .estimatedVerticalPlane])
+		
 		guard let result = hitTestResults.first else { return }
 		// 수정
 		let worldCoordinates = simd_float3(x: result.worldTransform.columns.3.x, y: result.worldTransform.columns.3.y, z: result.worldTransform.columns.3.z)
 		let cameraCoordinates = simd_float3(x: x, y: y, z: z)
 		let distance = distance(cameraCoordinates, worldCoordinates)
 		
-		distanceLabel.text = String(floor(distance*10000)/100) + "cm"
+		distanceLabel.text = "\(label): " + String(floor(distance*10000)/100) + "cm"
 	}
 	
 	func myResultsMethod(request: VNRequest, error: Error?) {
-		guard let results = request.results as? [VNClassificationObservation] else {
+		guard let results = request.results as? [VNRecognizedObjectObservation] else {
 			fatalError("could not get results from ML Vision request.")
 		}
 		
-		var bestPrediction = ""
-		var bestConfidence: VNConfidence = 0
-		
-		for classification in results {
-			if(classification.confidence > bestConfidence && classification.confidence > 0.6) {
-				bestConfidence = classification.confidence
-				bestPrediction = classification.identifier
+		for observation in results where observation is VNRecognizedObjectObservation {
+			guard let objectObservation = observation as? VNRecognizedObjectObservation else {
+				continue
+			}
+			// Select only the label with the highest confidence.
+			let topLabelObservation = objectObservation.labels[0]
+			let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+			
+//			print(topLabelObservation)
+//			print(objectBounds)
+//			print("@@")
+			if label != topLabelObservation.identifier {
+				label = topLabelObservation.identifier
+				check.frame = CGRect(x: objectBounds.midX, y: objectBounds.midY, width: 10, height: 10)
+				check.backgroundColor = .blue
+				check.layer.cornerRadius = 5
+				point = check.center
+				changed = true
+			} else {
+				changed = false
 			}
 		}
 	}
