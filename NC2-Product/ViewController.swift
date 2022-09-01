@@ -32,8 +32,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	let modelFile = YOLOv3Tiny()
 	var bufferSize: CGSize = .zero
 	var label = ""
-	var point = CGPoint()
-	var changed = false
+	var pixelBuffer: CVBuffer?
 	
 	let check = UIView()
 	
@@ -47,6 +46,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		sceneView.delegate = self
 		let scene = SCNScene()
 		sceneView.scene = scene
+		
+		sceneView.addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(tapGesture)))
+		
+		Timer.scheduledTimer(timeInterval: 0.5, target: self, selector: #selector(tapGesture), userInfo: nil, repeats: true)
 	}
 	
 	override func viewWillAppear(_ animated: Bool) {
@@ -96,36 +99,26 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 	
 	func session(_ session: ARSession, didUpdate frame: ARFrame) {
 		let transform = frame.camera.transform
+		cameraPosition.removeAll()
 		cameraPosition.append(transform.columns.3.x)
 		cameraPosition.append(transform.columns.3.y)
 		cameraPosition.append(transform.columns.3.z)
 		
-		let pixelBuffer = frame.capturedImage
-		guard let model = try? VNCoreMLModel(for: modelFile.model) else {
-			fatalError("can't load Places ML model")
-		}
-		
-		let image = CIImage(cvImageBuffer: pixelBuffer)
-		let handler = VNImageRequestHandler(ciImage: image)
-		let request = VNCoreMLRequest(model: model, completionHandler: myResultsMethod)
-		try! handler.perform( [ request ] )
-		
-		if changed {
-			printDistance(x: transform.columns.3.x, y: transform.columns.3.y, z: transform.columns.3.z, point: point)
-		}
+		pixelBuffer = frame.capturedImage
 	}
 	
 	func printDistance(x: Float, y: Float, z: Float, point: CGPoint) {
 		guard trackingStateOK == true else { return }
-		let hitTestResults = sceneView.hitTest(point, types: [.estimatedHorizontalPlane, .estimatedVerticalPlane])
 		
-		guard let result = hitTestResults.first else { return }
-		
-		let worldCoordinates = simd_float3(x: result.worldTransform.columns.3.x, y: result.worldTransform.columns.3.y, z: result.worldTransform.columns.3.z)
+		guard let query = sceneView.raycastQuery(from: point, allowing: .existingPlaneInfinite, alignment: .any) else { return }
+		let results = sceneView.session.raycast(query)
+		guard let position = results.first?.worldTransform else { return }
+		let worldCoordinates = simd_float3(x: position.columns.3.x, y: position.columns.3.y, z: position.columns.3.z)
 		let cameraCoordinates = simd_float3(x: x, y: y, z: z)
-		let distance = distance(cameraCoordinates, worldCoordinates)
+		let distanceResult = distance(cameraCoordinates, worldCoordinates)
 		
-		distanceLabel.text = "\(label): " + String(floor(distance*10000)/100) + "cm"
+		distanceLabel.text = "\(label): " + String(floor(distanceResult*10000)/100) + "cm"
+		TTSManager.shared.play("\(String(floor(distanceResult*10000)/100))cm 앞에 \(label)가 있습니다.")
 	}
 	
 	func myResultsMethod(request: VNRequest, error: Error?) {
@@ -133,24 +126,26 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 			fatalError("could not get results from ML Vision request.")
 		}
 		
-		for observation in results where observation is VNRecognizedObjectObservation {
-			guard let objectObservation = observation as? VNRecognizedObjectObservation else {
-				continue
-			}
-			
+		for observation in results {
+			let objectObservation = observation
 			let topLabelObservation = objectObservation.labels[0]
 			let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
+			label = topLabelObservation.identifier
+			check.frame = CGRect(x: objectBounds.midX, y: objectBounds.midY, width: 10, height: 10)
+			check.backgroundColor = .blue
 			
-			if label != topLabelObservation.identifier {
-				label = topLabelObservation.identifier
-				check.frame = CGRect(x: objectBounds.midX, y: objectBounds.midY, width: 10, height: 10)
-				check.backgroundColor = .blue
-				check.layer.cornerRadius = 5
-				point = check.center
-				changed = true
-			} else {
-				changed = false
+			printDistance(x: cameraPosition[0], y: cameraPosition[1], z: cameraPosition[2], point: check.center)
+		}
+	}
+	
+	@objc func tapGesture() {
+		if pixelBuffer != nil {
+			guard let model = try? VNCoreMLModel(for: modelFile.model) else {
+				fatalError("can't load Places ML model")
 			}
+			
+			let handler = VNImageRequestHandler(ciImage: CIImage(cvImageBuffer: pixelBuffer!).resize(size: CGSize(width: 299, height: 299)))
+			try! handler.perform( [ VNCoreMLRequest(model: model, completionHandler: myResultsMethod) ] )
 		}
 	}
 }
