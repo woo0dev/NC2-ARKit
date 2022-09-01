@@ -78,10 +78,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		descriptionLabel.textColor = .white
 		view.addSubview(descriptionLabel)
 		
-//		let markLabel = UILabel(frame: CGRect(x: view.center.x, y: view.center.y, width: 30, height: 20))
-//		markLabel.text = "🔴"
-//		view.addSubview(markLabel)
-		
 		sceneView.addSubview(check)
 	}
 	
@@ -124,7 +120,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 		let hitTestResults = sceneView.hitTest(point, types: [.estimatedHorizontalPlane, .estimatedVerticalPlane])
 		
 		guard let result = hitTestResults.first else { return }
-		// 수정
+		
 		let worldCoordinates = simd_float3(x: result.worldTransform.columns.3.x, y: result.worldTransform.columns.3.y, z: result.worldTransform.columns.3.z)
 		let cameraCoordinates = simd_float3(x: x, y: y, z: z)
 		let distance = distance(cameraCoordinates, worldCoordinates)
@@ -141,13 +137,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, ARSessionDelegate {
 			guard let objectObservation = observation as? VNRecognizedObjectObservation else {
 				continue
 			}
-			// Select only the label with the highest confidence.
+			
 			let topLabelObservation = objectObservation.labels[0]
 			let objectBounds = VNImageRectForNormalizedRect(objectObservation.boundingBox, Int(bufferSize.width), Int(bufferSize.height))
 			
-//			print(topLabelObservation)
-//			print(objectBounds)
-//			print("@@")
 			if label != topLabelObservation.identifier {
 				label = topLabelObservation.identifier
 				check.frame = CGRect(x: objectBounds.midX, y: objectBounds.midY, width: 10, height: 10)

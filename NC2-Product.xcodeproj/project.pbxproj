@@ -15,6 +15,7 @@
 		E24634F028BDFEE6009A51F9 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = E24634EE28BDFEE6009A51F9 /* LaunchScreen.storyboard */; };
 		E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */ = {isa = PBXBuildFile; fileRef = E24634F628BDFFFF009A51F9 /* CIImage.swift */; };
 		E24634FD28BE015F009A51F9 /* Inceptionv3.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = E24634FC28BE015F009A51F9 /* Inceptionv3.mlmodel */; };
+		E2DBE99928C07ADA00F597AB /* TTSManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2DBE99828C07ADA00F597AB /* TTSManager.swift */; };
 		E2E9840B28BF2709000E23B0 /* YOLOv3Tiny.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = E2E9840828BF2709000E23B0 /* YOLOv3Tiny.mlmodel */; };
 		E2E9840C28BF2709000E23B0 /* YOLOv3TinyInt8LUT.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = E2E9840928BF2709000E23B0 /* YOLOv3TinyInt8LUT.mlmodel */; };
 		E2E9840D28BF2709000E23B0 /* YOLOv3TinyFP16.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = E2E9840A28BF2709000E23B0 /* YOLOv3TinyFP16.mlmodel */; };
@@ -30,6 +31,7 @@
 		E24634EF28BDFEE6009A51F9 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		E24634F628BDFFFF009A51F9 /* CIImage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImage.swift; sourceTree = "<group>"; };
 		E24634FC28BE015F009A51F9 /* Inceptionv3.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = Inceptionv3.mlmodel; path = ../../../../../Downloads/Inceptionv3.mlmodel; sourceTree = "<group>"; };
+		E2DBE99828C07ADA00F597AB /* TTSManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TTSManager.swift; sourceTree = "<group>"; };
 		E2E9840828BF2709000E23B0 /* YOLOv3Tiny.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = YOLOv3Tiny.mlmodel; path = ../../../../../Downloads/YOLOv3Tiny.mlmodel; sourceTree = "<group>"; };
 		E2E9840928BF2709000E23B0 /* YOLOv3TinyInt8LUT.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = YOLOv3TinyInt8LUT.mlmodel; path = ../../../../../Downloads/YOLOv3TinyInt8LUT.mlmodel; sourceTree = "<group>"; };
 		E2E9840A28BF2709000E23B0 /* YOLOv3TinyFP16.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; name = YOLOv3TinyFP16.mlmodel; path = ../../../../../Downloads/YOLOv3TinyFP16.mlmodel; sourceTree = "<group>"; };
@@ -76,6 +78,7 @@
 				E2E9840828BF2709000E23B0 /* YOLOv3Tiny.mlmodel */,
 				E2E9840A28BF2709000E23B0 /* YOLOv3TinyFP16.mlmodel */,
 				E2E9840928BF2709000E23B0 /* YOLOv3TinyInt8LUT.mlmodel */,
+				E2DBE99828C07ADA00F597AB /* TTSManager.swift */,
 			);
 			path = "NC2-Product";
 			sourceTree = "<group>";
@@ -153,6 +156,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				E24634FD28BE015F009A51F9 /* Inceptionv3.mlmodel in Sources */,
+				E2DBE99928C07ADA00F597AB /* TTSManager.swift in Sources */,
 				E24634E828BDFEE5009A51F9 /* ViewController.swift in Sources */,
 				E2E9840B28BF2709000E23B0 /* YOLOv3Tiny.mlmodel in Sources */,
 				E24634F728BDFFFF009A51F9 /* CIImage.swift in Sources */,
